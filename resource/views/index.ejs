@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Index</title>
+    <!-- Bootstrap -->
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+  </head>
+  <body>  
+	<div class="container">
+	<!-- Static navbar -->
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+		  <div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+			  <span class="sr-only">Toggle navigation</span>
+			  <span class="icon-bar"></span>
+			  <span class="icon-bar"></span>
+			  <span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="#">Qlik Sense</a>
+		  </div>
+		  <div id="navbar" class="navbar-collapse collapse">
+			<form class="navbar-form navbar-left">
+				<div class="form-group">
+				    <select id="UserList" class="form-control" name="UserLogin" onchange="doLogin(this);">
+						<option value="NoUser">Select a user from the list above</option>
+						<option value="administrator">Administrador</option>
+						<option value="peripliadev">WIN-H1BPLPOCTTC</option>
+						<option value="bubba">QLIK</option>
+						<option value="mauroft">Mauricio Flor</option>
+						<option value="frojas">Felipe Rojas</option>
+						<option value="jrios">Yessica Rios</option>
+						<option value="fbaena">Fenimore Baena</option>
+					</select>
+				</div> 
+				<div class="btn-group" role="group" aria-label="...">
+				  <button id="logoutspan" class="btn btn-default" onclick="doLogout();">Cerrar Sesion</button>
+				  <button id="reset" class="btn btn-default" onclick="doReset();">Resetiar</button>
+				</div>
+			</form>
+		  </div><!--/.nav-collapse -->
+		</div><!--/.container-fluid -->
+	</nav>
+	<div class="row">
+		<div class="col-md-12"> 
+			<div id="analysis">
+				<iframe id="targetFrame" src='' style='border:none;' width="100%"></iframe>				
+			</div>
+			<div id="selectuser" style="display: block;">Seleccione un usuario de la lista anterior.</div>
+		</div>
+	</div>
+</div>
+
+<script>
+  var query = getQueryParams(document.location.search);
+  var contentFrame = document.getElementById('targetFrame');
+    
+  if (query.redirect) {
+    //If we get a ticket, show the redirect URL using the QlikTicket, hide the user selection message, and show the reset/logout button
+	contentFrame.height = window.innerHeight - 200;
+	console.log('redirect', query.redirect);
+	contentFrame.src = query.redirect;
+
+	contentFrame.style.display = "block";
+	document.getElementById('selectuser').style.display = "none";
+	document.getElementById('reset').style.display = "block";
+	document.getElementById('logoutspan').style.display = "block";
+	
+  } else {
+    //If we don't have a ticket, show the select user message and hide the reset/iframe/logout items
+  	document.getElementById('selectuser').style.display = "block";
+	contentFrame.style.display = "none";
+	document.getElementById('reset').style.display = "none";
+	document.getElementById('logoutspan').style.display = "none";
+  }
+
+  //If we get an authenticated user, select the user in the drop down and disable the others
+  if (query.selecteduser) {
+    var selectElem = document.getElementById( 'UserList');
+	selectElem.value = query.selecteduser;
+
+	for (i = 0; i < selectElem.options.length; i++) {
+	(selectElem.options[i].selected)
+      ? selectElem.options[i].disabled = false
+      : selectElem.options[i].disabled = true ;
+	} 
+  }
+
+	function doLogin(my) {
+		var text = '';
+		switch(my.value) {
+			case "bubba":
+				text = "QLIK";
+				break;
+			case "administrator":
+				text = "WIN-H1BPLPOCTTC";
+				break;
+			case "peripliadev":
+				text = "WIN-H1BPLPOCTTC";
+				break;
+			case "mauroft":
+				text = "EXCELFILEUD";
+				break;
+			case "frojas":
+				text = "EXCELFILEUD";
+				break;
+			case "jrios":
+				text = "EXCELFILEUD";
+				break;
+			case "fbaena":
+				text = "EXCELFILEUD";
+				break;
+		}
+		document.location = "/login?selectedUser="+my.value+"&userDirectory="+text;
+	}
+
+  function doReset() {
+	  contentFrame = document.getElementById('targetFrame');
+	  contentFrame.height = window.innerHeight - 200;
+	  contentFrame.src = removeURLParameter(query.QlikRedirect,'QlikTicket');
+	}
+
+  function doLogout() {
+	  document.location = "/logout?selectedUser="+query.selecteduser+"&userDirectory="+document.getElementById('UserList').name;
+	}
+
+  function getQueryParams(qs) {
+    qs = qs.split('+').join(' ');
+
+    var params = {},
+        tokens,
+        re = /[?&]?([^=]+)=([^&]*)/g;
+
+    while (tokens = re.exec(qs)) {
+        params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+    }
+
+    return params;
+  }
+
+  function removeURLParameter(url, parameter) {
+    var urlparts= url.split('?');
+    if (urlparts.length>=2) {
+
+        var prefix= encodeURIComponent(parameter)+'=';
+        var pars= urlparts[1].split(/[&;]/g);
+
+        //reverse iteration as may be destructive
+        for (var i= pars.length; i-- > 0;) {
+            //idiom for string.startsWith
+            if (pars[i].lastIndexOf(prefix, 0) !== -1) {
+                pars.splice(i, 1);
+            }
+        }
+
+        url= urlparts[0]+'?'+pars.join('&');
+        return url;
+    } else {
+        return url;
+    }
+}
+</script>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  </body>
+</html>
